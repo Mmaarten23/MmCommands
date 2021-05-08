@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"com.mmaarten.mmcommands","l":"MmCommand"},{"p":"com.mmaarten.mmcommands","l":"MmCommandHandler"},{"p":"com.mmaarten.mmcommands","l":"MmCommandSignature"},{"p":"com.mmaarten.mmcommands","l":"MmCommandType"}]
