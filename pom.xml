@@ -6,7 +6,7 @@
 
     <groupId>com.mmaarten</groupId>
     <artifactId>MmCommands</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.0-DEV</version>
     <packaging>jar</packaging>
 
     <name>MmCommands</name>
@@ -16,9 +16,9 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -43,6 +43,26 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>se.eris</groupId>
+                <artifactId>notnull-instrumenter-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>instrument</goal>
+                            <goal>tests-instrument</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jetbrains</groupId>
+                        <artifactId>annotations</artifactId>
+                        <version>RELEASE</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
         <resources>

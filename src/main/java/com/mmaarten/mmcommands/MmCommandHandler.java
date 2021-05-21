@@ -30,8 +30,10 @@ public class MmCommandHandler implements TabExecutor {
     private boolean runLastAllowed = false;
     private @NotNull String helpHeader = "----Help----";
     private @NotNull String helpCommandPrefix = "&d";
-    private @NotNull String commandArgumentSpacer = "&5";
-    private @NotNull String argumentDescriptionSpacer = "&8> &7";
+    private @NotNull String helpCommandArgumentSpacer = "&5";
+    private @NotNull String helpArgumentDescriptionSpacer = " &8> &7";
+    private @NotNull String helpPropertyPrefix = "&5";
+    private @NotNull String helpPropertyValueSpacer = " &8> &7";
 
 
     /**
@@ -156,7 +158,7 @@ public class MmCommandHandler implements TabExecutor {
      * help entry, not in front of the {@link #helpHeader(String) header}.
      * The last {@link ChatColor} code in this string will be the color
      * used to display the {@link MmCommandSignature#name() command}.
-     * Default: "&d"
+     * Default: "&amp;d"
      * <p>
      * ! Only used in the default implementation of {@link #printHelp(CommandSender, String, List, int)} !
      *
@@ -178,7 +180,7 @@ public class MmCommandHandler implements TabExecutor {
      * <p>
      * The last {@link ChatColor} code in this string will be the color
      * used to display the {@link MmCommandSignature#arguments() arguments}.
-     * Default: "&5"
+     * Default: "&amp;5"
      * <p>
      * ! Only used in the default implementation of {@link #printHelp(CommandSender, String, List, int)} !
      *
@@ -188,7 +190,7 @@ public class MmCommandHandler implements TabExecutor {
     public @NotNull MmCommandHandler helpArgumentSpacer(@NotNull String argumentSpacer) {
         if (this.commands.size() != 0)
             throw new RuntimeException("Options cannot be modified after commands have been added");
-        this.commandArgumentSpacer = argumentSpacer;
+        this.helpCommandArgumentSpacer = argumentSpacer;
         return this;
     }
 
@@ -200,7 +202,7 @@ public class MmCommandHandler implements TabExecutor {
      * <p>
      * The last {@link ChatColor} code in this string will be the color
      * used to display the {@link MmCommandSignature#description() description}.
-     * Default: "&5"
+     * Default: "&amp;5"
      * <p>
      * ! Only used in the default implementation of {@link #printHelp(CommandSender, String, List, int)} !
      *
@@ -210,7 +212,49 @@ public class MmCommandHandler implements TabExecutor {
     public @NotNull MmCommandHandler helpDescriptionSpacer(@NotNull String descriptionSpacer) {
         if (this.commands.size() != 0)
             throw new RuntimeException("Options cannot be modified after commands have been added");
-        this.argumentDescriptionSpacer = descriptionSpacer;
+        this.helpArgumentDescriptionSpacer = descriptionSpacer;
+        return this;
+    }
+
+    /**
+     * Set the prefix to use in the per command help menu
+     * The string will be used once in front of every property,
+     * not in the {@link #helpHeader(String) header}.
+     * <p>
+     * The last {@link ChatColor} code in this string will be the color
+     * used to display the property.
+     * Default: "&amp;d"
+     * <p>
+     * ! Only used in the default implementation of {@link #printPerCommandHelp(CommandSender, String, MmCommand)} !
+     *
+     * @param helpPropertyPrefix the property prefix
+     * @return this handler
+     */
+    public @NotNull MmCommandHandler helpPropertyPrefix(@NotNull String helpPropertyPrefix) {
+        if (this.commands.size() != 0)
+            throw new RuntimeException("Options cannot be modified after commands have been added");
+        this.helpPropertyPrefix = helpPropertyPrefix;
+        return this;
+    }
+
+
+    /**
+     * Set the spacer to use in between the property and the value
+     * in the per command help menu.
+     * <p>
+     * The last {@link ChatColor} code in this string will be the color
+     * used to display the value.
+     * Default: "&amp;5"
+     * <p>
+     * ! Only used in the default implementation of {@link #printPerCommandHelp(CommandSender, String, MmCommand)} !
+     *
+     * @param helpPropertyValueSpacer the description spacer
+     * @return this handler
+     */
+    public @NotNull MmCommandHandler helpPropertyValueSpacer(@NotNull String helpPropertyValueSpacer) {
+        if (this.commands.size() != 0)
+            throw new RuntimeException("Options cannot be modified after commands have been added");
+        this.helpPropertyValueSpacer = helpPropertyValueSpacer;
         return this;
     }
 
@@ -226,11 +270,10 @@ public class MmCommandHandler implements TabExecutor {
      * @param command the command to add to this handler
      * @return this handler
      */
-    public @NotNull MmCommandHandler addCommand(MmCommand command) {
+    public @NotNull MmCommandHandler addCommand(@NotNull MmCommand command) {
         if (command.getClass().getAnnotation(MmCommandSignature.class) == null)
-            throw new IllegalArgumentException(
-                    "Class " + command.getClass().getName() + " must be annotated by a " + MmCommandSignature.class.getName() + " annotation!"
-            );
+            throw new IllegalArgumentException("Class " + command.getClass().getName() + " must be annotated by a " + MmCommandSignature.class.getName() + " annotation!");
+
         MmCommandSignature sig = command.getClass().getAnnotation(MmCommandSignature.class);
         if (commandExists(command))
             throw new IllegalArgumentException("Cannot register " + sig.name() + ": Name already registered as command");
@@ -260,10 +303,15 @@ public class MmCommandHandler implements TabExecutor {
      * @param command Command which was executed
      * @param label   Alias of the command which was used
      * @param args    Passed command arguments
-     * @return true if a valid command, otherwise false
+     * @return true
      */
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public boolean onCommand(
+            @NotNull CommandSender sender,
+            @NotNull Command command,
+            @NotNull String label,
+            String[] args
+    ) {
         // No subcommand provided
         if (args.length == 0) {
             if (noArguments(sender)) {
@@ -273,11 +321,21 @@ public class MmCommandHandler implements TabExecutor {
         }
 
         // Check for the "help" subcommand
-        if (useHelp)
-            if (args[0].equalsIgnoreCase("help")) {
+        if (useHelp) {
+            if (args.length == 1 && args[0].equalsIgnoreCase("help")) {
                 printHelp(sender, label, new ArrayList<>(this.commands), args);
                 return true;
             }
+            if (args.length > 1) {
+                @Nullable MmCommand cmd = getCommand(args[1]);
+                if (cmd == null) {
+                    printHelp(sender, label, new ArrayList<>(this.commands), args);
+                    return true;
+                }
+                printPerCommandHelp(sender, label, cmd);
+                return true;
+            }
+        }
 
         // Find matching command
         @Nullable MmCommand cmd = getCommand(args[0]);
@@ -288,16 +346,18 @@ public class MmCommandHandler implements TabExecutor {
         }
 
         // Check type and permissions
-        if (failsChecks(sender, cmd, label)) return true;
+        if (failsChecks(sender, cmd, label, true)) return true;
 
-
-        SubCommandWrapper wrapper = getSubCommand(args, cmd, sender, label);
+        // Find matching subcommand
+        SubCommandWrapper wrapper = getSubCommand(Arrays.copyOfRange(args, 1, args.length), cmd, sender, label, !this.runLastAllowed);
         int i = wrapper.getDepth();
         cmd = wrapper.getSub();
         if (cmd == null) return true;
 
+        // Remove first parameter and pass
+        // the rest to the matched command
         List<String> arguments = new ArrayList<>(Arrays.asList(args));
-        arguments = arguments.subList(Math.min(i, args.length), args.length);
+        arguments = arguments.subList(Math.min(i + 1, args.length), args.length);
         cmd.onCommand(sender, command, label, arguments.toArray(new String[0]));
         return true;
     }
@@ -316,7 +376,12 @@ public class MmCommandHandler implements TabExecutor {
      * to default to the command executor
      */
     @Override
-    public List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, String[] args) {
+    public List<String> onTabComplete(
+            @NotNull CommandSender sender,
+            @NotNull Command command,
+            @NotNull String label,
+            String[] args
+    ) {
         if (args.length == 1) {
             List<String> completions = getAllowedCommands(sender, label)
                     .stream()
@@ -327,8 +392,7 @@ public class MmCommandHandler implements TabExecutor {
         }
 
 
-        // TODO: add per command help
-        if (useHelp && args.length == 2)
+        if (this.useHelp && args.length == 2 && args[0].equalsIgnoreCase("help"))
             return getAllowedCommands(sender, label)
                     .stream()
                     .map(mmCommand -> mmCommand.getClass().getAnnotation(MmCommandSignature.class).name())
@@ -342,10 +406,10 @@ public class MmCommandHandler implements TabExecutor {
         }
 
         // Check type and permissions
-        if (failsChecks(sender, cmd, label, true)) return MmCommandHandler.NO_COMPLETIONS;
+        if (failsChecks(sender, cmd, label)) return MmCommandHandler.NO_COMPLETIONS;
 
         // Check current subcommand
-        SubCommandWrapper wrapper = getSubCommand(args, cmd, sender, label, true);
+        SubCommandWrapper wrapper = getSubCommand(Arrays.copyOfRange(args, 1, args.length), cmd, sender, label, false);
         int i = wrapper.getDepth();
         cmd = wrapper.getSub();
         if (cmd == null) return MmCommandHandler.NO_COMPLETIONS;
@@ -356,11 +420,11 @@ public class MmCommandHandler implements TabExecutor {
 
         // Append future subcommands if needed and allowed
         List<String> completions = cmd.onTabComplete(sender, command, label, args);
-        if (this.generateTabCompletions) {
+        if (this.generateTabCompletions && i == args.length - 2) {
             if (completions == null) completions = new ArrayList<>();
             completions.addAll(cmd.getSubcommands()
                     .stream()
-                    .filter(mmCommand -> !failsChecks(sender, mmCommand, label, true))
+                    .filter(mmCommand -> !failsChecks(sender, mmCommand, label))
                     .map(mmCommand -> mmCommand.getClass().getAnnotation(MmCommandSignature.class).name())
                     .collect(Collectors.toList())
             );
@@ -368,51 +432,74 @@ public class MmCommandHandler implements TabExecutor {
         return completions;
     }
 
-    //TODO: subcommands only need a permission check. Type is not needed
-    private boolean failsChecks(CommandSender sender, MmCommand cmd, String label) {
+    private boolean failsChecks(
+            @NotNull CommandSender sender,
+            @NotNull MmCommand cmd,
+            @NotNull String label
+    ) {
         return failsChecks(sender, cmd, label, false);
     }
 
-    private boolean failsChecks(CommandSender sender, MmCommand cmd, String label, boolean suppressHelp) {
-        // Check type
+    private boolean failsChecks(
+            @NotNull CommandSender sender,
+            @NotNull MmCommand cmd,
+            @NotNull String label,
+            boolean displayHelp
+    ) {
         MmCommandSignature info = cmd.getClass().getAnnotation(MmCommandSignature.class);
+        return failsType(sender, cmd, label, displayHelp) || failsPermission(sender, cmd, label, displayHelp);
+    }
+
+    private boolean failsType(
+            @NotNull CommandSender sender,
+            @NotNull MmCommand cmd,
+            @NotNull String label,
+            boolean displayHelp
+    ) {
+        MmCommandSignature info = cmd.getClass().getAnnotation(MmCommandSignature.class);
+
         switch (info.type()) {
             case PLAYER_ONLY:
                 if (!(sender instanceof Player)) {
 
-                    if (!suppressHelp && noValidType(sender, info))
-                        printHelp(sender, label, new ArrayList<>(this.commands), 0);
+                    if (displayHelp && noValidType(sender, info))
+                        printPerCommandHelp(sender, label, cmd);
                     return true;
                 }
                 break;
             case CONSOLE_ONLY:
                 if (!(sender instanceof ConsoleCommandSender)) {
-                    if (!suppressHelp && noValidType(sender, info))
-                        printHelp(sender, label, new ArrayList<>(this.commands), 0);
+                    if (displayHelp && noValidType(sender, info))
+                        printPerCommandHelp(sender, label, cmd);
                     return true;
                 }
                 break;
             case PLAYER_CONSOLE:
                 if (!(sender instanceof ConsoleCommandSender) && !(sender instanceof Player)) {
-                    if (!suppressHelp && noValidType(sender, info))
-                        printHelp(sender, label, new ArrayList<>(this.commands), 0);
+                    if (displayHelp && noValidType(sender, info))
+                        printPerCommandHelp(sender, label, cmd);
                     return true;
                 }
         }
+        return false;
+    }
 
-        // Check permission
+    private boolean failsPermission(
+            @NotNull CommandSender sender,
+            @NotNull MmCommand cmd,
+            @NotNull String label,
+            boolean displayHelp
+    ) {
+        MmCommandSignature info = cmd.getClass().getAnnotation(MmCommandSignature.class);
         if (!sender.hasPermission(info.permission())) {
-            if (!suppressHelp && noPermission(sender, info))
-                printHelp(sender, label, new ArrayList<>(this.commands), 0);
+            if (displayHelp && noPermission(sender, info))
+                printPerCommandHelp(sender, label, cmd);
             return true;
         }
         return false;
     }
 
-    private @NotNull List<MmCommandSignature> getSignatures() {
-        return this.commands.stream().map(command -> command.getClass().getAnnotation(MmCommandSignature.class)).collect(Collectors.toList());
-    }
-
+    //done
     private @Nullable MmCommand getCommand(@NotNull String name) {
         return this.commands
                 .stream()
@@ -426,42 +513,83 @@ public class MmCommandHandler implements TabExecutor {
                 .orElse(null);
     }
 
-    private @NotNull List<MmCommand> getAllowedCommands(@NotNull CommandSender sender, @NotNull String label) {
-        return this.commands.stream().filter(command -> !failsChecks(sender, command, label, true)).collect(Collectors.toList());
+    //done
+    private @NotNull List<MmCommand> getAllowedCommands(
+            @NotNull CommandSender sender,
+            @NotNull String label
+    ) {
+        return this.commands.stream().filter(command -> !failsChecks(sender, command, label)).collect(Collectors.toList());
     }
 
-    private @NotNull SubCommandWrapper getSubCommand(@NotNull String[] args, @NotNull MmCommand cmd, @NotNull CommandSender sender, @NotNull String label) {
-        return getSubCommand(args, cmd, sender, label, false);
+    //needs testing
+    private @NotNull SubCommandWrapper getSubCommand(
+            @NotNull String[] args,
+            @NotNull MmCommand cmd,
+            @NotNull CommandSender sender,
+            @NotNull String label
+    ) {
+        return getSubCommand(args, cmd, sender, label, true);
     }
 
-    private @NotNull SubCommandWrapper getSubCommand(@NotNull String[] args, @NotNull MmCommand cmd, @NotNull CommandSender sender, @NotNull String label, boolean suppressHelp) {
-        int i = 1;
-        while (i < args.length) {
-            int finalI = i;
-            MmCommand temp = cmd.getSubcommands().stream().filter(sub -> {
-                MmCommandSignature subInfo = sub.getClass().getAnnotation(MmCommandSignature.class);
-                return subInfo.name().equalsIgnoreCase(args[finalI]) ||
-                        Arrays.stream(subInfo.aliases()).anyMatch(alias -> alias.equalsIgnoreCase(args[0]));
-            })
-                    .findFirst()
-                    .orElse(null);
-            if (temp == null) break;
-            if (failsChecks(sender, temp, label, suppressHelp)) {
-                if (!this.runLastAllowed) cmd = null;
-                break;
-            }
-            cmd = temp;
-            i++;
+    //needs testing
+    private @NotNull SubCommandWrapper getSubCommand(
+            @NotNull String[] args,
+            @NotNull MmCommand cmd,
+            @NotNull CommandSender sender,
+            @NotNull String label,
+            boolean displayHelp
+    ) {
+        return getSubCommand(args, cmd, sender, label, displayHelp, 0);
+    }
+
+    //done
+    private @NotNull SubCommandWrapper getSubCommand(
+            @NotNull String[] args,
+            @NotNull MmCommand cmd,
+            @NotNull CommandSender sender,
+            @NotNull String label,
+            boolean displayHelp,
+            int currentLevel
+    ) {
+        // last argument has been matched
+        if (args.length == 0)
+            return new SubCommandWrapper(cmd, currentLevel);
+
+        // match next argument with subcommands
+        // checking for both names and aliases
+        MmCommand temp = cmd.getSubcommands().stream().filter(sub -> {
+            MmCommandSignature subInfo = sub.getClass().getAnnotation(MmCommandSignature.class);
+            return subInfo.name().equalsIgnoreCase(args[0]) ||
+                    Arrays.stream(subInfo.aliases()).anyMatch(alias -> alias.equalsIgnoreCase(args[0]));
+        })
+                .findAny()
+                .orElse(null);
+
+        // next argument is not a subcommand
+        // treating it as a regular argument
+        if (temp == null)
+            return new SubCommandWrapper(cmd, currentLevel);
+
+        // argument is matched as a subcommand
+        // but sender does not have permission
+        if (failsPermission(sender, temp, label, displayHelp)) {
+            if (!this.runLastAllowed)
+                return new SubCommandWrapper(null, currentLevel);
+            return new SubCommandWrapper(cmd, currentLevel);
         }
-        return new SubCommandWrapper(cmd, i);
+
+        // check next argument
+        return getSubCommand(Arrays.copyOfRange(args, 1, args.length), temp, sender, label, displayHelp, currentLevel + 1);
     }
 
+    //done
     private boolean commandExists(@NotNull MmCommand command) {
         return this.commands.stream().anyMatch(command1 ->
                 command1.getClass().getAnnotation(MmCommandSignature.class).name().equals(command.getClass().getAnnotation(MmCommandSignature.class).name())
         );
     }
 
+    //done
     private boolean checkAliasNameConflict(@NotNull MmCommand command) {
         String[] aliases = command.getClass().getAnnotation(MmCommandSignature.class).aliases();
         Set<String> existingNames = this.commands
@@ -471,6 +599,7 @@ public class MmCommandHandler implements TabExecutor {
         return Arrays.stream(aliases).anyMatch(existingNames::contains);
     }
 
+    //done
     private boolean checkAliasAliasConflict(@NotNull MmCommand command) {
         String[] aliases = command.getClass().getAnnotation(MmCommandSignature.class).aliases();
         Set<String> existingAliases = new HashSet<>();
@@ -484,6 +613,7 @@ public class MmCommandHandler implements TabExecutor {
         return Arrays.stream(aliases).anyMatch(existingAliases::contains);
     }
 
+    //done
     private boolean checkNameAliasConflict(@NotNull MmCommand command) {
         String name = command.getClass().getAnnotation(MmCommandSignature.class).name();
         Set<String> existingAliases = new HashSet<>();
@@ -497,13 +627,20 @@ public class MmCommandHandler implements TabExecutor {
         return existingAliases.contains(name);
     }
 
+    //done
     private boolean checkHelpConflict(@NotNull MmCommand command) {
         String name = command.getClass().getAnnotation(MmCommandSignature.class).name();
         String[] aliases = command.getClass().getAnnotation(MmCommandSignature.class).aliases();
         return name.equalsIgnoreCase("help") || Arrays.stream(aliases).anyMatch(alias -> alias.equalsIgnoreCase("help"));
     }
 
-    private void printHelp(@NotNull CommandSender commandSender, @NotNull String label, @NotNull List<MmCommand> commands, String[] args) {
+    //done
+    private void printHelp(
+            @NotNull CommandSender commandSender,
+            @NotNull String label,
+            @NotNull List<MmCommand> commands,
+            String[] args
+    ) {
         int pageNr = 0;
         if (args.length >= 2) {
             try {
@@ -514,15 +651,28 @@ public class MmCommandHandler implements TabExecutor {
         printHelp(commandSender, label, commands, pageNr);
     }
 
-    private @NotNull List<String> generateHelpStrings(@NotNull CommandSender sender, @NotNull MmCommand currentCmd, @NotNull String label, @NotNull String prefix) {
+    //done
+    private @NotNull List<String> generateHelpStrings(
+            @NotNull CommandSender sender,
+            @NotNull MmCommand currentCmd,
+            @NotNull String label,
+            @NotNull String prefix
+    ) {
         MmCommandSignature current = currentCmd.getClass().getAnnotation(MmCommandSignature.class);
         prefix = prefix + " " + current.name();
         List<String> results = new ArrayList<>();
 
-        if (!current.arguments().equalsIgnoreCase("") || currentCmd.getSubcommands().size() == 0)
-            results.add(prefix + " " + this.commandArgumentSpacer + current.arguments() + " " + this.argumentDescriptionSpacer + current.description());
+        if (!current.description().equalsIgnoreCase("") || currentCmd.getSubcommands().size() == 0) {
+            String b = this.helpCommandPrefix +
+                    prefix +
+                    (current.arguments().equals("") ? "" : this.helpCommandArgumentSpacer) +
+                    current.arguments() +
+                    this.helpArgumentDescriptionSpacer +
+                    current.description();
+            results.add(b);
+        }
         for (MmCommand sub : currentCmd.getSubcommands()) {
-            if (!failsChecks(sender, sub, label, true))
+            if (!failsPermission(sender, sub, label, false))
                 results.addAll(generateHelpStrings(sender, sub, label, prefix));
         }
         return results;
@@ -561,7 +711,10 @@ public class MmCommandHandler implements TabExecutor {
      * @param attemptedCommand the command the player attempted to invoke (first argument)
      * @return whether or not to print the help menu to the player
      */
-    protected boolean noSuchCommand(@NotNull CommandSender sender, @NotNull String attemptedCommand) {
+    protected boolean noSuchCommand(
+            @NotNull CommandSender sender,
+            @NotNull String attemptedCommand
+    ) {
         return true;
     }
 
@@ -574,11 +727,11 @@ public class MmCommandHandler implements TabExecutor {
      * which poses no restrictions.
      * <p>
      * The return value determines whether or not
-     * the help menu should be printed.
+     * the help menu for the command should be printed.
      *
      * @param sender    the sender
      * @param signature the signature of the invoked command
-     * @return whether or not to print the help menu to the player
+     * @return whether or not to print the command help menu to the player
      */
     protected boolean noValidType(@NotNull CommandSender sender, @NotNull MmCommandSignature signature) {
         return true;
@@ -589,11 +742,11 @@ public class MmCommandHandler implements TabExecutor {
      * they do not have the required permission node for.
      * <p>
      * The return value determines whether or not
-     * the help menu should be printed.
+     * the help menu for the command should be printed.
      *
      * @param sender    the sender
      * @param signature the signature of the invoked command
-     * @return whether or not to print the help menu to the player
+     * @return whether or not to print the command help menu to the player
      */
     protected boolean noPermission(@NotNull CommandSender sender, @NotNull MmCommandSignature signature) {
         return true;
@@ -608,19 +761,24 @@ public class MmCommandHandler implements TabExecutor {
      * {@link #helpCommandPrefix(String) commandPrefix} {@code /label [subcommand(s)]}
      * {@link #helpArgumentSpacer(String) argumentSpacer} {@link MmCommandSignature#arguments() arguments}
      * {@link #helpDescriptionSpacer(String) descriptionSpacer} {@link MmCommandSignature#description() description}
-     *
+     * <p>
      * A help entry will be added for all {@link MmCommand}s that match at least one of the following conditions:
      * <ul>
-     *     <li>The command signature has a non-empty string for the arguments property</li>
+     *     <li>The command signature has a non-empty string for the descriptions property</li>
      *     <li>The command does not have any subcommands</li>
      * </ul>
      *
      * @param commandSender the command sender
      * @param label         the label
      * @param commands      the commands
-     * @param page          the page
+     * @param page          the page to be displayed. Zero based.
      */
-    protected void printHelp(@NotNull CommandSender commandSender, @NotNull String label, @NotNull List<MmCommand> commands, int page) {
+    protected void printHelp(
+            @NotNull CommandSender commandSender,
+            @NotNull String label,
+            @NotNull List<MmCommand> commands,
+            int page
+    ) {
         List<MmCommand> allowedCommands = getAllowedCommands(commandSender, label);
         List<String> helpMenu = new ArrayList<>();
         String prefix = this.helpCommandPrefix + "/" + label;
@@ -636,6 +794,45 @@ public class MmCommandHandler implements TabExecutor {
 
     }
 
+    /**
+     * Print the help menu to the provided commandsender.
+     * The help menu consists of the {@link #helpHeader(String) header}
+     * followed by a summary of the associated {@link MmCommandSignature signature}
+     * followed by all help entries related to the provided basecommand
+     * Each entry follows this pattern:
+     * {@link #helpCommandPrefix(String) commandPrefix} {@code /label [subcommand(s)]}
+     * {@link #helpArgumentSpacer(String) argumentSpacer} {@link MmCommandSignature#arguments() arguments}
+     * {@link #helpDescriptionSpacer(String) descriptionSpacer} {@link MmCommandSignature#description() description}
+     * <p>
+     * A help entry will be added for the {@link MmCommand} and its subcommands that match at least one of the following conditions:
+     * <ul>
+     *     <li>The command signature has a non-empty string for the arguments property</li>
+     *     <li>The command does not have any subcommands</li>
+     * </ul>
+     *
+     * @param sender the command sender
+     * @param label  the label
+     * @param cmd    the command to print the help menu for
+     */
+    protected void printPerCommandHelp(
+            @NotNull CommandSender sender,
+            @NotNull String label,
+            @NotNull MmCommand cmd
+    ) {
+        MmCommandSignature sig = cmd.getClass().getAnnotation(MmCommandSignature.class);
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', this.helpHeader));
+        String summary = String.format("%sName%s%s\n", this.helpPropertyPrefix, this.helpPropertyValueSpacer, sig.name());
+        summary += String.format("%sAliases%s%s\n", this.helpPropertyPrefix, this.helpPropertyValueSpacer, Arrays.toString(sig.aliases()));
+        summary += String.format("%sType%s%s\n", this.helpPropertyPrefix, this.helpPropertyValueSpacer, sig.type());
+        summary += String.format("%sPermission%s%s\n", this.helpPropertyPrefix, this.helpPropertyValueSpacer, sig.permission());
+        summary += String.format("%sDescription%s%s\n", this.helpPropertyPrefix, this.helpPropertyValueSpacer, sig.description());
+
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', summary));
+        for (String line : generateHelpStrings(sender, cmd, label, "/" + label)) {
+            sender.sendMessage(ChatColor.translateAlternateColorCodes('&', line));
+        }
+    }
+
 
     private static class SubCommandWrapper {
         private final @Nullable MmCommand sub;
@@ -647,7 +844,10 @@ public class MmCommandHandler implements TabExecutor {
          * @param sub   the sub
          * @param depth the depth
          */
-        public SubCommandWrapper(@Nullable MmCommand sub, int depth) {
+        public SubCommandWrapper(
+                @Nullable MmCommand sub,
+                int depth
+        ) {
             this.sub = sub;
             this.depth = depth;
         }

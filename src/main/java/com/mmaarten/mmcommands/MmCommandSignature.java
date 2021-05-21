@@ -10,8 +10,8 @@ import java.lang.annotation.Target;
 public @interface MmCommandSignature {
     String name();
     MmCommandType type();
-    String description();
 
+    String description() default "";
     String[] aliases() default {};
     String permission() default "";
     String arguments() default "";
