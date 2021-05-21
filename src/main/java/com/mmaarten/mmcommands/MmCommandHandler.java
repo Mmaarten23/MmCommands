@@ -28,9 +28,9 @@ public class MmCommandHandler implements TabExecutor {
     private boolean useHelp = false;
     private boolean generateTabCompletions = false;
     private boolean runLastAllowed = false;
-    private @NotNull String helpHeader = "----Help----";
+    private @NotNull String helpHeader = "----Help---- page: %page%";
     private @NotNull String helpCommandPrefix = "&d";
-    private @NotNull String helpCommandArgumentSpacer = "&5";
+    private @NotNull String helpCommandArgumentSpacer = " &5";
     private @NotNull String helpArgumentDescriptionSpacer = " &8> &7";
     private @NotNull String helpPropertyPrefix = "&5";
     private @NotNull String helpPropertyValueSpacer = " &8> &7";
@@ -118,6 +118,7 @@ public class MmCommandHandler implements TabExecutor {
      * Minecraft color codes can be used by using the &amp; character as alternative
      * color character.
      * Multiple lines can be used by using the java newline character.
+     * The page number is available through the placeholder %page%
      * Default: "----Help----"
      * <p>
      * ! Only used in the default implementation of {@link #printHelp(CommandSender, String, List, int)} !
@@ -787,7 +788,7 @@ public class MmCommandHandler implements TabExecutor {
         }
 
         page = Math.max(page, 0);
-        commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', this.helpHeader));
+        commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', this.helpHeader.replace("%page%", String.valueOf(page))));
         for (int index = page * commandsPerPage; index < Math.min((page + 1) * commandsPerPage, helpMenu.size()); index++) {
             commandSender.sendMessage(ChatColor.translateAlternateColorCodes('&', helpMenu.get(index)));
         }
@@ -820,7 +821,7 @@ public class MmCommandHandler implements TabExecutor {
             @NotNull MmCommand cmd
     ) {
         MmCommandSignature sig = cmd.getClass().getAnnotation(MmCommandSignature.class);
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', this.helpHeader));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', this.helpHeader).replace("%page", "0"));
         String summary = String.format("%sName%s%s\n", this.helpPropertyPrefix, this.helpPropertyValueSpacer, sig.name());
         summary += String.format("%sAliases%s%s\n", this.helpPropertyPrefix, this.helpPropertyValueSpacer, Arrays.toString(sig.aliases()));
         summary += String.format("%sType%s%s\n", this.helpPropertyPrefix, this.helpPropertyValueSpacer, sig.type());
