@@ -12,7 +12,7 @@ The MmCommand handler will handle all the repetitiveness of performing basic per
 All the metadata needed to make this work is stored in the `MmCommandSignature` annotation. 
 
 # First time user
-If this is your first time working with the MmCommands dependency, it is highly suggested that you follow the [tutorial](Getting-started) so you get a grip on how this dependency works. Intermediate knowledge of Java, spigot, and maven/Gradle is expected.
+If this is your first time working with the MmCommands dependency, it is highly suggested that you follow the [tutorial](https://github.com/Mmaarten23/MmCommands/wiki/Getting-started) so you get a grip on how this dependency works. Intermediate knowledge of Java, spigot, and maven/Gradle is expected.
 
 
 # Support
