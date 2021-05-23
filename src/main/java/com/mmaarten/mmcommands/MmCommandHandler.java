@@ -382,58 +382,6 @@ public class MmCommandHandler implements TabExecutor {
     }
 
     //done
-    private boolean commandExists(@NotNull MmCommand command) {
-        return this.commands.stream().anyMatch(command1 ->
-                command1.getClass().getAnnotation(MmCommandSignature.class).name().equals(command.getClass().getAnnotation(MmCommandSignature.class).name())
-        );
-    }
-
-    //done
-    private boolean checkAliasNameConflict(@NotNull MmCommand command) {
-        String[] aliases = command.getClass().getAnnotation(MmCommandSignature.class).aliases();
-        Set<String> existingNames = this.commands
-                .stream()
-                .map(subcommand -> subcommand.getClass().getAnnotation(MmCommandSignature.class).name())
-                .collect(Collectors.toSet());
-        return Arrays.stream(aliases).anyMatch(existingNames::contains);
-    }
-
-    //done
-    private boolean checkAliasAliasConflict(@NotNull MmCommand command) {
-        String[] aliases = command.getClass().getAnnotation(MmCommandSignature.class).aliases();
-        Set<String> existingAliases = new HashSet<>();
-        this.commands.forEach(subcommand ->
-                existingAliases.addAll(
-                        Arrays.asList(
-                                subcommand.getClass().getAnnotation(MmCommandSignature.class).aliases()
-                        )
-                )
-        );
-        return Arrays.stream(aliases).anyMatch(existingAliases::contains);
-    }
-
-    //done
-    private boolean checkNameAliasConflict(@NotNull MmCommand command) {
-        String name = command.getClass().getAnnotation(MmCommandSignature.class).name();
-        Set<String> existingAliases = new HashSet<>();
-        this.commands.forEach(subcommand ->
-                existingAliases.addAll(
-                        Arrays.asList(
-                                subcommand.getClass().getAnnotation(MmCommandSignature.class).aliases()
-                        )
-                )
-        );
-        return existingAliases.contains(name);
-    }
-
-    //done
-    private boolean checkHelpConflict(@NotNull MmCommand command) {
-        String name = command.getClass().getAnnotation(MmCommandSignature.class).name();
-        String[] aliases = command.getClass().getAnnotation(MmCommandSignature.class).aliases();
-        return name.equalsIgnoreCase("help") || Arrays.stream(aliases).anyMatch(alias -> alias.equalsIgnoreCase("help"));
-    }
-
-    //done
     private void printHelp(
             @NotNull CommandSender commandSender,
             @NotNull String label,
