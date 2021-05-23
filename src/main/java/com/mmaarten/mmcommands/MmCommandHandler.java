@@ -87,61 +87,7 @@ public class MmCommandHandler implements TabExecutor {
         this.helpCommandArgumentSpacer = helpCommandArgumentSpacer;
         this.helpArgumentDescriptionSpacer = helpArgumentDescriptionSpacer;
         this.helpPropertyPrefix = helpPropertyPrefix;
-        return this;
-    }
-
-
-    /**
-     * Set the spacer to use in between the property and the value
-     * in the per command help menu.
-     * <p>
-     * The last {@link ChatColor} code in this string will be the color
-     * used to display the value.
-     * Default: "&amp;5"
-     * <p>
-     * ! Only used in the default implementation of {@link #printPerCommandHelp(CommandSender, String, MmCommand)} !
-     *
-     * @param helpPropertyValueSpacer the description spacer
-     * @return this handler
-     */
-    public @NotNull MmCommandHandler helpPropertyValueSpacer(@NotNull String helpPropertyValueSpacer) {
-        if (this.commands.size() != 0)
-            throw new RuntimeException("Options cannot be modified after commands have been added");
         this.helpPropertyValueSpacer = helpPropertyValueSpacer;
-        return this;
-    }
-
-    /**
-     * Register a command to this handler.
-     * The command class has to be annotated by the
-     * {@link MmCommandSignature} annotation.
-     * <p>
-     * Both the {@link MmCommandSignature#name() name} and
-     * the {@link MmCommandSignature#aliases() aliases}
-     * must be unique.
-     *
-     * @param command the command to add to this handler
-     * @return this handler
-     */
-    public @NotNull MmCommandHandler addCommand(@NotNull MmCommand command) {
-        if (command.getClass().getAnnotation(MmCommandSignature.class) == null)
-            throw new IllegalArgumentException("Class " + command.getClass().getName() + " must be annotated by a " + MmCommandSignature.class.getName() + " annotation!");
-
-        MmCommandSignature sig = command.getClass().getAnnotation(MmCommandSignature.class);
-        if (commandExists(command))
-            throw new IllegalArgumentException("Cannot register " + sig.name() + ": Name already registered as command");
-        if (checkAliasNameConflict(command))
-            throw new IllegalArgumentException("Cannot register " + sig.name() + ": Registers an alias that is already being used as name for another command");
-        if (checkAliasAliasConflict(command))
-            throw new IllegalArgumentException("Cannot register " + sig.name() + ": Registers an alias that is already being used as alias for another command");
-        if (checkNameAliasConflict(command))
-            throw new IllegalArgumentException("Cannot register " + sig.name() + ": Name is already being used as alias for another command");
-        if (this.useHelp && checkHelpConflict(command))
-            throw new IllegalArgumentException("Cannot register " + sig.name() + ": Command name or alias conflicts with the help command");
-        if (sig.type() == MmCommandType.SUB_COMMAND)
-            throw new IllegalArgumentException("Cannot register " + sig.name() + ": Command type must not be" + MmCommandType.SUB_COMMAND);
-        this.commands.add(command);
-        return this;
     }
 
     /*
