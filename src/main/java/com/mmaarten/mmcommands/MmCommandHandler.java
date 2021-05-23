@@ -824,7 +824,7 @@ public class MmCommandHandler implements TabExecutor {
      * <p>
      * A help entry will be added for the {@link MmCommand} and its subcommands that match at least one of the following conditions:
      * <ul>
-     *     <li>The command signature has a non-empty string for the arguments property</li>
+     *     <li>The command signature has a non-empty string for the description property</li>
      *     <li>The command does not have any subcommands</li>
      * </ul>
      *
