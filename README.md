@@ -1,7 +1,6 @@
 <div align = "center"><img src = "https://github.com/Mmaarten23/MmCommands/blob/master/docs/Wiki/header_image.png" alt = MmCommands header></div>
 
 
-Welcome to the MmCommands wiki!
 MmCommands is a project that is aimed at removing some of the repetitive tasks developers may encounter when implementing a command system into their plugins. 
 
 The project itself consists of 3 main concepts:
