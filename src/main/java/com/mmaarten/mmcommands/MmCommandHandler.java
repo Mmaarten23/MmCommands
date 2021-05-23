@@ -64,200 +64,28 @@ public class MmCommandHandler implements TabExecutor {
      * Instantiates a new MmCommand handler.
      */
     public MmCommandHandler() {
-        this.commands = new ArrayList<>();
+        this(Collections.<MmCommand>emptyList(), 5, false, false, false, "----Help" +
+                "---- " +
+                "page: " +
+            "%page%", "&d", " &5", " &8> &7", "&5", " &8> &7");
     }
 
-    /*
-     * CREATION
-     */
-
-    /**
-     * Enable the help feature for this handler.
-     * This will allow the use of {@code /<basecommand> help}
-     * which will invoke {@link #printHelp(CommandSender, String, List, int)}.
-     * <p>
-     * When enabled, all first-level subcommands are forbidden to use "help"
-     * as name or alias.
-     *
-     * @return this handler
-     */
-    public @NotNull MmCommandHandler useHelp() {
-        if (this.commands.size() != 0)
-            throw new RuntimeException("Options cannot be modified after commands have been added");
-        this.useHelp = true;
-        return this;
-    }
-
-    /**
-     * Enable automatic tab completions for this handler.
-     * When enabled, the name of subcommands are automatically added
-     * to the completions. (If the {@link CommandSender} has access to
-     * that specific subcommand)
-     *
-     * @return this handler
-     */
-    public @NotNull MmCommandHandler generateTabCompletions() {
-        if (this.commands.size() != 0)
-            throw new RuntimeException("Options cannot be modified after commands have been added");
-        this.generateTabCompletions = true;
-        return this;
-    }
-
-    /**
-     * Enable partial running for this handler.
-     * <p>
-     * When enabled, the handler will call the last correctly matched
-     * subcommand even if it is followed by a subcommand the {@link CommandSender}
-     * does not have the required permissions for. Example given
-     *
-     * <p>
-     * User enters the command {@code /myplugin say bold Hello World!}.
-     * The user has the permission to the say subcommand but is lacking the
-     * permission for the {@code bold} subcommand.
-     * <ul>
-     *     <li>
-     *         If partial running is not enabled on the handler for the {@code /myplugin} command,
-     *         {@link #noPermission(CommandSender, MmCommandSignature)} will be called
-     *         and command execution will be cancelled.
-     *     </li>
-     *     <li>
-     *         If partial running is enabled, the {@code say} subcommand will be executed
-     *         with arguments {@code ["bold","Hello", "World!"]}
-     *     </li>
-     * </ul>
-     *
-     * @return this handler
-     */
-    //TODO: check if a missing permission message will be displayed if a partial command is ran
-    public @NotNull MmCommandHandler runLastAllowed() {
-        if (this.commands.size() != 0)
-            throw new RuntimeException("Options cannot be modified after commands have been added");
-        this.runLastAllowed = true;
-        return this;
-    }
-
-    /**
-     * Set the header to be added to every help menu page.
-     * <p>
-     * Minecraft color codes can be used by using the &amp; character as alternative
-     * color character.
-     * Multiple lines can be used by using the java newline character.
-     * The page number is available through the placeholder %page%
-     * Default: "----Help----"
-     * <p>
-     * ! Only used in the default implementation of {@link #printHelp(CommandSender, String, List, int)} !
-     *
-     * @param header the header
-     * @return this handler
-     */
-    public @NotNull MmCommandHandler helpHeader(@NotNull String header) {
-        if (this.commands.size() != 0)
-            throw new RuntimeException("Options cannot be modified after commands have been added");
-        this.helpHeader = header;
-        return this;
-    }
-
-    /**
-     * Set the amount of help entries listed on each help page.
-     * Default: 5
-     * <p>
-     * ! Only used in the default implementation of {@link #printHelp(CommandSender, String, List, int)} !
-     *
-     * @param amount the amount
-     * @return this handler
-     */
-    public @NotNull MmCommandHandler amountOfCommandsPerHelpPage(int amount) {
-        if (this.commands.size() != 0)
-            throw new RuntimeException("Options cannot be modified after commands have been added");
-        if (amount < 0)
-            throw new IllegalArgumentException("Amount cannot be negative");
-        if (amount > 100)
-            throw new IllegalArgumentException("Amount cannot be greater than 100");
-        this.commandsPerPage = amount;
-        return this;
-    }
-
-    /**
-     * Set the prefix to use in the help menu.
-     * The string will be put in front of every
-     * help entry, not in front of the {@link #helpHeader(String) header}.
-     * The last {@link ChatColor} code in this string will be the color
-     * used to display the {@link MmCommandSignature#name() command}.
-     * Default: "&amp;d"
-     * <p>
-     * ! Only used in the default implementation of {@link #printHelp(CommandSender, String, List, int)} !
-     *
-     * @param commandPrefix the command color
-     * @return this handler
-     */
-    public @NotNull MmCommandHandler helpCommandPrefix(@NotNull String commandPrefix) {
-        if (this.commands.size() != 0)
-            throw new RuntimeException("Options cannot be modified after commands have been added");
-        this.helpCommandPrefix = commandPrefix;
-        return this;
-    }
-
-    /**
-     * Set the spacer to use in between the {@link MmCommandSignature#name() command}
-     * with possible {@link MmCommand#getSubcommands() subcommands}
-     * and the {@link MmCommandSignature#arguments() arguments}. The string will be used
-     * once in every help entry, not in the {@link #helpHeader(String) header}.
-     * <p>
-     * The last {@link ChatColor} code in this string will be the color
-     * used to display the {@link MmCommandSignature#arguments() arguments}.
-     * Default: "&amp;5"
-     * <p>
-     * ! Only used in the default implementation of {@link #printHelp(CommandSender, String, List, int)} !
-     *
-     * @param argumentSpacer the argument spacer
-     * @return this handler
-     */
-    public @NotNull MmCommandHandler helpArgumentSpacer(@NotNull String argumentSpacer) {
-        if (this.commands.size() != 0)
-            throw new RuntimeException("Options cannot be modified after commands have been added");
-        this.helpCommandArgumentSpacer = argumentSpacer;
-        return this;
-    }
-
-    /**
-     * Set the spacer to use in between the {@link MmCommandSignature#arguments() arguments}
-     * and the {@link MmCommandSignature#description() description}.
-     * The string will be used once in every help entry,
-     * not in the {@link #helpHeader(String) header}.
-     * <p>
-     * The last {@link ChatColor} code in this string will be the color
-     * used to display the {@link MmCommandSignature#description() description}.
-     * Default: "&amp;5"
-     * <p>
-     * ! Only used in the default implementation of {@link #printHelp(CommandSender, String, List, int)} !
-     *
-     * @param descriptionSpacer the description spacer
-     * @return this handler
-     */
-    public @NotNull MmCommandHandler helpDescriptionSpacer(@NotNull String descriptionSpacer) {
-        if (this.commands.size() != 0)
-            throw new RuntimeException("Options cannot be modified after commands have been added");
-        this.helpArgumentDescriptionSpacer = descriptionSpacer;
-        return this;
-    }
-
-    /**
-     * Set the prefix to use in the per command help menu
-     * The string will be used once in front of every property,
-     * not in the {@link #helpHeader(String) header}.
-     * <p>
-     * The last {@link ChatColor} code in this string will be the color
-     * used to display the property.
-     * Default: "&amp;d"
-     * <p>
-     * ! Only used in the default implementation of {@link #printPerCommandHelp(CommandSender, String, MmCommand)} !
-     *
-     * @param helpPropertyPrefix the property prefix
-     * @return this handler
-     */
-    public @NotNull MmCommandHandler helpPropertyPrefix(@NotNull String helpPropertyPrefix) {
-        if (this.commands.size() != 0)
-            throw new RuntimeException("Options cannot be modified after commands have been added");
+    MmCommandHandler(List<MmCommand> commands, int commandsPerPage,
+                     boolean useHelp, boolean generateTabCompletions,
+                     boolean runLastAllowed, String helpHeader,
+                     String helpCommandPrefix,
+                     String helpCommandArgumentSpacer,
+                     String helpArgumentDescriptionSpacer,
+                     String helpPropertyPrefix, String helpPropertyValueSpacer) {
+        this.commands = commands;
+        this.commandsPerPage = commandsPerPage;
+        this.useHelp = useHelp;
+        this.generateTabCompletions = generateTabCompletions;
+        this.runLastAllowed = runLastAllowed;
+        this.helpHeader = helpHeader;
+        this.helpCommandPrefix = helpCommandPrefix;
+        this.helpCommandArgumentSpacer = helpCommandArgumentSpacer;
+        this.helpArgumentDescriptionSpacer = helpArgumentDescriptionSpacer;
         this.helpPropertyPrefix = helpPropertyPrefix;
         return this;
     }
