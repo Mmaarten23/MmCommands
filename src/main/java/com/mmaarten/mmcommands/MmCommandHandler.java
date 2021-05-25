@@ -47,17 +47,17 @@ import java.util.stream.Collectors;
 public class MmCommandHandler implements TabExecutor {
     private final static @NotNull List<String> NO_COMPLETIONS = new ArrayList<>();
 
-    protected final @NotNull List<MmCommand> commands;
-    protected final int commandsPerPage;
-    protected final boolean useHelp;
-    protected final boolean generateTabCompletions;
-    protected final boolean runLastAllowed;
-    protected final @NotNull String helpHeader;
-    protected final @NotNull String helpCommandPrefix;
-    protected final @NotNull String helpCommandArgumentSpacer;
-    protected final @NotNull String helpArgumentDescriptionSpacer;
-    protected final @NotNull String helpPropertyPrefix;
-    protected final @NotNull String helpPropertyValueSpacer;
+    private final @NotNull List<MmCommand> commands;
+    private final int commandsPerPage;
+    private final boolean useHelp;
+    private final boolean generateTabCompletions;
+    private final boolean runLastAllowed;
+    private final @NotNull String helpHeader;
+    private final @NotNull String helpCommandPrefix;
+    private final @NotNull String helpCommandArgumentSpacer;
+    private final @NotNull String helpArgumentDescriptionSpacer;
+    private final @NotNull String helpPropertyPrefix;
+    private final @NotNull String helpPropertyValueSpacer;
 
 
     /**
