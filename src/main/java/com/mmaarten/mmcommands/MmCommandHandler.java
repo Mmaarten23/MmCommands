@@ -490,13 +490,13 @@ public class MmCommandHandler implements TabExecutor {
 
     /**
      * Print the help menu to the provided commandsender.
-     * The help menu consists of the {@link #helpHeader(String) header}
-     * followed by {@link #amountOfCommandsPerHelpPage(int) a specified amount}
-     * of help entries.
+     * The help menu consists of the {@link MmCommandHandler.Builder#setHelpHeader(String) header}
+     * followed by {@link MmCommandHandler.Builder#setAmountOfCommandsPerHelpPage(int)
+     * a specified amount} of help entries.
      * Each entry follows this pattern:
-     * {@link #helpCommandPrefix(String) commandPrefix} {@code /label [subcommand(s)]}
-     * {@link #helpArgumentSpacer(String) argumentSpacer} {@link MmCommandSignature#arguments() arguments}
-     * {@link #helpDescriptionSpacer(String) descriptionSpacer} {@link MmCommandSignature#description() description}
+     * {@link MmCommandHandler.Builder#setHelpCommandPrefix(String) commandPrefix} {@code /label [subcommand(s)]}
+     * {@link MmCommandHandler.Builder#setHelpArgumentSpacer(String) argumentSpacer} {@link MmCommandSignature#arguments() arguments}
+     * {@link MmCommandHandler.Builder#setHelpDescriptionSpacer(String) descriptionSpacer} {@link MmCommandSignature#description() description}
      * <p>
      * A help entry will be added for all {@link MmCommand}s that match at least one of the following conditions:
      * <ul>
@@ -532,13 +532,13 @@ public class MmCommandHandler implements TabExecutor {
 
     /**
      * Print the help menu to the provided commandsender.
-     * The help menu consists of the {@link #helpHeader(String) header}
+     * The help menu consists of the {@link MmCommandHandler.Builder#setHelpHeader(String) header}
      * followed by a summary of the associated {@link MmCommandSignature signature}
      * followed by all help entries related to the provided basecommand
      * Each entry follows this pattern:
-     * {@link #helpCommandPrefix(String) commandPrefix} {@code /label [subcommand(s)]}
-     * {@link #helpArgumentSpacer(String) argumentSpacer} {@link MmCommandSignature#arguments() arguments}
-     * {@link #helpDescriptionSpacer(String) descriptionSpacer} {@link MmCommandSignature#description() description}
+     * {@link MmCommandHandler.Builder#setHelpCommandPrefix(String) commandPrefix} {@code /label [subcommand(s)]}
+     * {@link MmCommandHandler.Builder#setHelpArgumentSpacer(String) argumentSpacer} {@link MmCommandSignature#arguments() arguments}
+     * {@link MmCommandHandler.Builder#setHelpDescriptionSpacer(String) descriptionSpacer} {@link MmCommandSignature#description() description}
      * <p>
      * A help entry will be added for the {@link MmCommand} and its subcommands that match at least one of the following conditions:
      * <ul>
