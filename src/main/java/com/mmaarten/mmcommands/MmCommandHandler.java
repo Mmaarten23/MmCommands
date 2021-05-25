@@ -59,18 +59,7 @@ public class MmCommandHandler implements TabExecutor {
     private final @NotNull String helpPropertyPrefix;
     private final @NotNull String helpPropertyValueSpacer;
 
-
-    /**
-     * Instantiates a new MmCommand handler.
-     */
-    public MmCommandHandler() {
-        this(Collections.<MmCommand>emptyList(), 5, false, false, false, "----Help" +
-                "---- " +
-                "page: " +
-            "%page%", "&d", " &5", " &8> &7", "&5", " &8> &7");
-    }
-
-    MmCommandHandler(List<MmCommand> commands, int commandsPerPage,
+    private MmCommandHandler(List<MmCommand> commands, int commandsPerPage,
                      boolean useHelp, boolean generateTabCompletions,
                      boolean runLastAllowed, String helpHeader,
                      String helpCommandPrefix,
