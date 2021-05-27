@@ -17,6 +17,7 @@
 
 package com.mmaarten.mmcommands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -121,7 +122,6 @@ public class MmCommandHandler implements TabExecutor {
      *
      * @return this handler
      */
-    //TODO: check if a missing permission message will be displayed if a partial command is ran
     public @NotNull MmCommandHandler runLastAllowed() {
         if (this.commands.size() != 0)
             throw new RuntimeException("Options cannot be modified after commands have been added");
